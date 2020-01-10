@@ -1,0 +1,38 @@
+Source: python-dmidecode
+XS-Python-Version: >= 2.4
+Section: python
+Priority: optional
+Homepage: http://projects.autonomy.net.au/python-dmidecode
+Maintainer: Nima Talebi <nima@it.net.au>
+Build-Depends: debhelper (>> 7), python-support (>= 0.5.3), python,
+ python-all-dev (>= 2.5.4-2), python-all-dbg, libxml2-dev, python-libxml2
+Standards-Version: 3.8.4
+
+Package: python-dmidecode
+XB-Python-Version: ${python:Versions}
+Architecture: any
+Provides: ${python:Provides}
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-libxml2
+Description: Python extension module for dmidecode
+ DMI (the desktop management interface) provides a standardized description of
+ a computer's hardware, including characteristics such as BIOS serial number
+ and hardware connectors.
+ .
+ This package provides an interface to the DMI data available from the BIOS.
+ It is intended to be used as a back-end tool by other hardware detection
+ programs implemented in Python.
+
+Package: python-dmidecode-dbg
+Architecture: any
+Priority: extra
+Section: debug
+Depends: python-dmidecode (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends},
+ python-dbg
+Provides: ${python:Provides}
+XB-Python-Version: ${python:Versions}
+Description: Python extension module for dmidecode (debug)
+ DMI (the desktop management interface) provides a standardized description of
+ a computer's hardware, including characteristics such as BIOS serial number
+ and hardware connectors.
+ .
+ This package contains the extension built for the Python debug interpreter.

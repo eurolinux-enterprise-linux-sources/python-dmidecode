@@ -1,0 +1,72 @@
+#!/usr/bin/make -f
+export DH_VERBOSE=0
+PACKAGE = $(shell dh_listpackages|head -n1)
+PYVERS  = $(shell pyversions -vr)
+
+################################################################################
+#. Build
+build: build-stamp
+build-stamp: $(PYVERS:%=build-ext-%) $(PYVERS:%=build-dbg-ext-%)
+	dh_testdir
+	touch $@
+build-ext-%:
+	python$* src/setup.py build
+	touch $@
+build-dbg-ext-%:
+	cp dmidecode.py dmidecode-dbg.py
+	python$*-dbg src/setup-dbg.py build
+	touch $@
+
+################################################################################
+#. Install
+install: install-stamp
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+	dh_installchangelogs
+	dh_installdocs
+	dh_installexamples
+	dh_install
+	dh_pysupport
+	dh_installman
+install-stamp: build-stamp $(PYVERS:%=install-ext-%) $(PYVERS:%=install-dbg-ext-%)
+install-ext-%:
+	python$* src/setup.py install \
+		--root $(CURDIR)/debian/$(PACKAGE) \
+		--install-layout=deb
+	touch $@
+install-dbg-ext-%:
+	python$*-dbg src/setup-dbg.py install \
+		--root $(CURDIR)/debian/$(PACKAGE)-dbg \
+		--install-layout=deb
+	#find $(CURDIR)/debian/$(PACKAGE)-dbg/usr/lib/python$*/ ! -type d ! -name '*_d\.so' -delete
+	#find $(CURDIR)/debian/$(PACKAGE)-dbg/usr/lib/python$*/ -depth -empty -delete
+	touch $@
+
+################################################################################
+#. Binary
+binary: binary-indep binary-arch
+binary-indep:
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+################################################################################
+#. Clean
+clean:
+	dh_testdir
+	dh_testroot
+	$(MAKE) -f Makefile clean
+	dh_clean build-stamp install-stamp dmidecode-dbg.py \
+	  $(PYVERS:%=install-ext-%) $(PYVERS:%=build-ext-%) \
+	  $(PYVERS:%=install-dbg-ext-%) $(PYVERS:%=build-dbg-ext-%)
+
+.PHONY: build clean binary-indep binary-arch binary install

@@ -3,23 +3,17 @@
 
 Summary: Python module to access DMI data
 Name: python-dmidecode
-Version: 3.10.13
-Release: 3%{?dist}
+Version: 3.10.15
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
-URL: http://projects.autonomy.net.au/python-dmidecode/
-Source0: http://src.autonomy.net.au/python-dmidecode/%{name}-%{version}.tar.gz
-# Upstream source gone. Repository restored from developer tree or source packages.
-# Source1: generate-tarball.sh
+URL: https://fedorahosted.org/python-dmidecode/
+Source0: https://git.fedorahosted.org/cgit/python-dmidecode.git/snapshot/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: libxml2-python
 BuildRequires: libxml2-python
 BuildRequires: libxml2-devel
 BuildRequires: python-devel
-
-Patch1: SIGILL-catcher.patch
-Patch2: dmispec-remove.patch
-Patch3: installed-invalid.patch
 
 %description
 python-dmidecode is a python extension module that uses the
@@ -28,9 +22,6 @@ as python data structures or as XML data using libxml2.
 
 %prep
 %setup -q
-%patch1 -p1 -b .SIGILL-catcher
-%patch2 -p1 -b .dmispec-remove
-%patch3 -p1 -b .install-invalid
 
 %build
 make build
@@ -45,7 +36,6 @@ python src/setup.py install --root $RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
 %files
 %defattr(-,root,root,-)
 %doc README doc/README.upstream doc/LICENSE doc/AUTHORS doc/AUTHORS.upstream
@@ -58,14 +48,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
+* Mon Oct 17 2016 Petr Oros <poros@redhat.com> - 3.10.15-1
+- New upstream version v3.10.15
+- Resolves: #728319
+
+* Mon Oct 17 2016 Petr Oros <poros@redhat.com> - 3.10.13-4
+- Fix upstream source url
+- Resolves: #1354287
 
 * Thu Jun 20 2013 Ales Ledvinka <aledvink@redhat.com> - 3.10.13-3
 - Attribute installed may appear as duplicate and cause invalid XML.
-  Resolves: #975059
+  Resolves: #949036
 
 * Mon Jun 17 2013 Ales Ledvinka <aledvink@redhat.com> - 3.10.13-2
 - Attribute dmispec may cause invalid XML on some hardware.
-  Resolves: #975059
+  Resolves: #949036
 
 
 * Wed Jun 29 2011 Roman Rakus <rrakus@redhat.com> - 3.10.13-1
