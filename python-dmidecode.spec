@@ -4,11 +4,13 @@
 Summary: Python module to access DMI data
 Name: python-dmidecode
 Version: 3.10.13
-Release: 1%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: http://projects.autonomy.net.au/python-dmidecode/
 Source0: http://src.autonomy.net.au/python-dmidecode/%{name}-%{version}.tar.gz
+# Upstream source gone. Repository restored from developer tree or source packages.
+# Source1: generate-tarball.sh
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: libxml2-python
 BuildRequires: libxml2-python
@@ -16,6 +18,8 @@ BuildRequires: libxml2-devel
 BuildRequires: python-devel
 
 Patch1: SIGILL-catcher.patch
+Patch2: dmispec-remove.patch
+Patch3: installed-invalid.patch
 
 %description
 python-dmidecode is a python extension module that uses the
@@ -25,6 +29,8 @@ as python data structures or as XML data using libxml2.
 %prep
 %setup -q
 %patch1 -p1 -b .SIGILL-catcher
+%patch2 -p1 -b .dmispec-remove
+%patch3 -p1 -b .install-invalid
 
 %build
 make build
@@ -52,6 +58,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
+
+* Thu Jun 20 2013 Ales Ledvinka <aledvink@redhat.com> - 3.10.13-3
+- Attribute installed may appear as duplicate and cause invalid XML.
+  Resolves: #975059
+
+* Mon Jun 17 2013 Ales Ledvinka <aledvink@redhat.com> - 3.10.13-2
+- Attribute dmispec may cause invalid XML on some hardware.
+  Resolves: #975059
+
+
 * Wed Jun 29 2011 Roman Rakus <rrakus@redhat.com> - 3.10.13-1
 - Update to 3.10.13 release
   Resolves: #621567, #627901, #667363
