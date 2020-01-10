@@ -1,0 +1,42 @@
+From ab5574fd95be339161b0546b03d076f9969086b2 Mon Sep 17 00:00:00 2001
+From: Lianbo Jiang <lijiang@redhat.com>
+Date: Tue, 20 Mar 2018 16:05:45 +0800
+Subject: [PATCH] python-dmidecode doesn't trim whitespace from some fields.
+
+The issue is introduced in commit 10a2d8bd43934966dd842fd8f401f0d679d0d66a.
+Do not add any contents if the string contents(val_s) is "(null)".
+
+Signed-off-by: Lianbo Jiang <lijiang@redhat.com>
+---
+ src/dmixml.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/dmixml.c b/src/dmixml.c
+index 5fe0dd5..cdb1589 100644
+--- a/src/dmixml.c
++++ b/src/dmixml.c
+@@ -198,8 +198,20 @@ xmlNode *dmixml_AddDMIstring(xmlNode *node, const char *tagname, const struct dm
+ 		res = xmlNewChild(node, NULL, tagname_s, NULL);
+                 dmixml_AddAttribute(res, "badindex", "1");
+         } else {
++                xmlChar *ret = NULL;
++                xmlChar *ptr = NULL;
+                 xmlChar *val_s =  xmlCharStrdup(dmistr);
+-                res = xmlNewTextChild(node, NULL, tagname_s, val_s);
++                // Right trim the string
++                assert( val_s != NULL );
++                ret = val_s;
++                ptr = ret + xmlStrlen(ret) - 1;
++                while( (ptr >= ret) && (*ptr == ' ') ) {
++                    *ptr = 0;
++                    ptr--;
++                }
++                // Do not add any contents if the string contents is "(null)"
++                res = xmlNewTextChild(node, NULL, tagname_s,
++                    (xmlStrcmp(val_s, (xmlChar *) "(null)") == 0 ? NULL : val_s));
+                 free(val_s);
+         }
+         return res;
+-- 
+2.9.5
+

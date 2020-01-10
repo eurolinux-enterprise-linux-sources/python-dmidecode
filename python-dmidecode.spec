@@ -4,7 +4,7 @@
 Summary: Python module to access DMI data
 Name: python-dmidecode
 Version: 3.10.15
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: https://fedorahosted.org/python-dmidecode/
@@ -15,6 +15,8 @@ BuildRequires: libxml2-python
 BuildRequires: libxml2-devel
 BuildRequires: python-devel
 
+Patch0001: 0001-python-dmidecode-doesn-t-trim-whitespace-from-some-f.patch
+
 %description
 python-dmidecode is a python extension module that uses the
 code-base of the 'dmidecode' utility, and presents the data
@@ -22,6 +24,7 @@ as python data structures or as XML data using libxml2.
 
 %prep
 %setup -q
+%patch0001 -p1
 
 %build
 make build
@@ -48,6 +51,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
+* Wed Feb 28 2018 Lianbo Jiang <lijiang@redhat.com> - 3.10.15-2
+- Trim whitespace from some fields
+- Resolves: #1445791
+
 * Mon Oct 17 2016 Petr Oros <poros@redhat.com> - 3.10.15-1
 - New upstream version v3.10.15
 - Resolves: #728319
