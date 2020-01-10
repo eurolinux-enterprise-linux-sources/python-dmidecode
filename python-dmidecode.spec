@@ -3,8 +3,8 @@
 
 Summary: Python module to access DMI data
 Name: python-dmidecode
-Version: 3.10.12
-Release: 1%{?dist}.1
+Version: 3.10.13
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: http://projects.autonomy.net.au/python-dmidecode/
@@ -15,7 +15,7 @@ BuildRequires: libxml2-python
 BuildRequires: libxml2-devel
 BuildRequires: python-devel
 
-Patch1: python-dmidecode-nullversion.patch
+Patch1: SIGILL-catcher.patch
 
 %description
 python-dmidecode is a python extension module that uses the
@@ -24,7 +24,7 @@ as python data structures or as XML data using libxml2.
 
 %prep
 %setup -q
-%patch1 -p1 -b .nullversion
+%patch1 -p1 -b .SIGILL-catcher
 
 %build
 make build
@@ -52,10 +52,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
-* Mon Aug 01 2011 Roman Rakus <rrakus@redhat.com> - 3.10.12-1.1
-- Fixed an issue causing SEGV on some hardware when dmi_processor_id()
-  is called
-  Resolves: #726614
+* Wed Jun 29 2011 Roman Rakus <rrakus@redhat.com> - 3.10.13-1
+- Update to 3.10.13 release
+  Resolves: #621567, #627901, #667363
+- Signal handler for SIGILL
+  Resolves #646429
 
 * Wed May 19 2010 Roman Rakus <rrakus@redhat.com> - 3.10.12-1
 - Update to 3.10.12 release
