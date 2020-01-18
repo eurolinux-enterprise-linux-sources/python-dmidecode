@@ -1,0 +1,126 @@
+From d6987c53d3648d85e410ef81a343867e239eb960 Mon Sep 17 00:00:00 2001
+From: David Sommerseth <davids@redhat.com>
+Date: Thu, 6 Jan 2011 15:56:24 +0100
+Subject: [PATCH 1/1] Harden dmi_string() calls with better NULL checks
+
+This patch fixes more potential issues where dmi_string() results
+was not necessarily checked for NULL, which potentially could lead
+to SEGV issues.
+
+Signed-off-by: David Sommerseth <davids@redhat.com>
+---
+ src/dmidecode.c | 23 ++++++++++++++++-------
+ src/dmioem.c    | 13 +++++++++++--
+ src/dmioem.h    |  2 +-
+ 3 files changed, 28 insertions(+), 10 deletions(-)
+
+diff --git a/src/dmidecode.c b/src/dmidecode.c
+index 726b2de..17f2130 100644
+--- a/src/dmidecode.c
++++ b/src/dmidecode.c
+@@ -918,6 +918,11 @@ void dmi_processor_family(xmlNode *node, const struct dmi_header *h)
+         /* Special case for ambiguous value 0xBE */
+         if(code == 0xBE) {
+                 const char *manufacturer = dmi_string(h, data[0x07]);
++
++                if( manufacturer == NULL ) {
++                        dmixml_AddTextContent(family_n, "Core 2 or K7 (Unkown manufacturer)");
++                        return;
++                }
+
+                 /* Best bet based on manufacturer string */
+                 if(strstr(manufacturer, "Intel") != NULL ||
+@@ -931,7 +935,7 @@ void dmi_processor_family(xmlNode *node, const struct dmi_header *h)
+                         dmixml_AddTextContent(family_n, "K7");
+                         return;
+                 }
+-                dmixml_AddTextContent(family_n, "Core 2 or K7");
++                dmixml_AddTextContent(family_n, "Core 2 or K7 (Unkown manufacturer)");
+                 return;
+         }
+
+@@ -959,7 +963,7 @@ void dmi_processor_family(xmlNode *node, const struct dmi_header *h)
+         dmixml_AddAttribute(family_n, "outofspec", "1");
+ }
+
+-xmlNode *dmi_processor_id(xmlNode *node, u8 type, const u8 * p, const char *version)
++xmlNode *dmi_processor_id(xmlNode *node, const struct dmi_header *h)
+ {
+         /* Intel AP-485 revision 31, table 3-4 */
+         static struct _cpuflags {
+@@ -1001,11 +1005,18 @@ xmlNode *dmi_processor_id(xmlNode *node, u8 type, const u8 * p, const char *vers
+                 {"PBE", "PBE (Pending break enabled)"}   /* 31 */
+                 /* *INDENT-ON* */
+         };
++        u8 type, *p = NULL;
++        char *version = NULL;
+
+         xmlNode *flags_n = NULL;
+         xmlNode *data_n = xmlNewChild(node, NULL, (xmlChar *) "CPUCore", NULL);
+         assert( data_n != NULL );
+
++        assert( h && h->data );
++        type = h->data[0x06];
++        p = h->data + 8;
++        version = dmi_string(h, h->data[0x10]);
++
+         /*
+          ** Extra flags are now returned in the ECX register when one calls
+          ** the CPUID instruction. Their meaning is explained in table 3-5, but
+@@ -3878,7 +3889,7 @@ xmlNode *dmi_decode(xmlNode *prnt_n, dmi_codes_major *dmiMajor, struct dmi_heade
+                 dmi_processor_type(sect_n, data[0x05]);
+                 dmi_processor_family(sect_n, h);
+
+-                dmi_processor_id(sect_n, data[0x06], data + 8, dmi_string(h, data[0x10]));
++                dmi_processor_id(sect_n, h);
+
+                 sub_n = xmlNewChild(sect_n, NULL, (xmlChar *) "Manufacturer", NULL);
+                 assert( sub_n != NULL );
+@@ -4899,7 +4909,7 @@ static void dmi_table(Log_t *logp, int type, u32 base, u16 len, u16 num, u16 ver
+
+                 /* assign vendor for vendor-specific decodes later */
+                 if(h.type == 0 && h.length >= 5) {
+-                        dmi_set_vendor(dmi_string(&h, data[0x04]));
++                        dmi_set_vendor(&h);
+                 }
+
+                 /* look for the next handle */
+diff --git a/src/dmioem.c b/src/dmioem.c
+index 361810a..67cd517 100644
+--- a/src/dmioem.c
++++ b/src/dmioem.c
+@@ -40,10 +40,19 @@ static enum DMI_VENDORS dmi_vendor = VENDOR_UNKNOWN;
+  * value if we know how to decode at least one specific entry type for
+  * that vendor.
+  */
+-void dmi_set_vendor(const char *s)
++void dmi_set_vendor(const struct dmi_header *h)
+ {
+-        if(strcmp(s, "HP") == 0)
++        const char *vendor;
++
++        if( !h || !h->data ) {
++                return;
++        }
++        vendor = dmi_string(h, h->data[0x04]);
++        if( !vendor ) {
++                return;
++        } else if(strcmp(vendor, "HP") == 0) {
+                 dmi_vendor = VENDOR_HP;
++        }
+ }
+
+ /*
+diff --git a/src/dmioem.h b/src/dmioem.h
+index b1b4af8..9ad25bf 100644
+--- a/src/dmioem.h
++++ b/src/dmioem.h
+@@ -22,5 +22,5 @@
+
+ struct dmi_header;
+
+-void dmi_set_vendor(const char *s);
++void dmi_set_vendor(const struct dmi_header *h);
+ int dmi_decode_oem(struct dmi_header *h);
+--
+1.8.3.1
