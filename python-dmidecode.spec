@@ -4,10 +4,10 @@
 Summary: Python module to access DMI data
 Name: python-dmidecode
 Version: 3.12.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: System Environment/Libraries
-URL: http://projects.autonomy.net.au/python-dmidecode/
+URL: https://github.com/nima/python-dmidecode/
 Source0: %{name}-%{version}.tar.xz
 Source1: generate-tarball.sh
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -15,6 +15,7 @@ Requires: libxml2-python
 BuildRequires: libxml2-python
 BuildRequires: libxml2-devel
 BuildRequires: python-devel
+ExcludeArch: s390x
 
 Patch0: disable-old-smbios-warning.patch
 Patch1: revert-interface-changes.patch
@@ -55,6 +56,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
+* Sun Jul 22 2018 Lianbo Jiang <lijiang@redhat.com> - 3.12.2-3
+- Modified upstream URL reference
+- Resolves: #1583926
+
+* Sun Jul 22 2018 Lianbo Jiang <lijiang@redhat.com> - 3.12.2-3
+- Disable build for s390x
+- Resolves: #1509936
+
 * Mon Nov 6 2017 Petr Oros <poros@redhat.com> - 3.12.2-2
 - Revert interface changes
 - Resolves: #1504033
