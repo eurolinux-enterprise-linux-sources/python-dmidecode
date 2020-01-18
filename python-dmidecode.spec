@@ -3,8 +3,8 @@
 
 Summary: Python module to access DMI data
 Name: python-dmidecode
-Version: 3.10.13
-Release: 12%{?dist}
+Version: 3.12.2
+Release: 1.1%{?dist}
 License: GPLv2
 Group: System Environment/Libraries
 URL: http://projects.autonomy.net.au/python-dmidecode/
@@ -16,13 +16,8 @@ BuildRequires: libxml2-python
 BuildRequires: libxml2-devel
 BuildRequires: python-devel
 
-# already in restored upstream git
-Patch1: SIGILL-catcher.patch
-# email: upstream why not in git, planed for release
-Patch2: dmispec-remove.patch
-# email: git postponed but planned for release
-Patch3: installed-invalid.patch
-Patch4: 0001-Harden-dmi_string-calls-with-better-NULL-checks.patch
+Patch0: disable-old-smbios-warning.patch
+Patch1: revert-interface-changes.patch
 
 %description
 python-dmidecode is a python extension module that uses the
@@ -31,10 +26,8 @@ as python data structures or as XML data using libxml2.
 
 %prep
 %setup -q
-%patch1 -p1 -b .SIGILL-catcher
-%patch2 -p1 -b .dmispec-remove
-%patch3 -p1 -b .install-invalid
-%patch4 -p1
+%patch0 -p1
+%patch1 -p1
 
 %build
 make build
@@ -62,9 +55,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
-* Mon May 22 2017 Petr Oros <poros@redhat.com> - 3.10.13-12
-- Fix segfaults when reading invalid dmidecode data
-- Resolves: #1431702
+* Mon Nov 20 2017 Petr Oros <poros@redhat.com> - 3.12.2-1.1
+- Revert interface changes
+- Resolves: #1514017
+
+* Mon Mar 13 2017 Petr Oros <poros@redhat.com> - 3.12.2-1
+- Update to new release
+- Resolves: #1431548
 
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 3.10.13-11
 - Mass rebuild 2014-01-24

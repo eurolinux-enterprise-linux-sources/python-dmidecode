@@ -1,0 +1,15 @@
+--- a/src/dmidecode.c	2017-03-13 10:29:05.482568934 +0100
++++ b/src/dmidecode.c	2017-03-13 10:29:21.437336606 +0100
+@@ -5230,12 +5230,6 @@ static void dmi_table(Log_t *logp, int t
+                 return;
+         }
+ 
+-        if (ver > SUPPORTED_SMBIOS_VER) {
+-                log_append(logp, LOGFL_NODUPS, LOG_WARNING,
+-                           "# SMBIOS implementations newer than version %u.%u are not\n"
+-                           "# fully supported by this version of dmidecode.\n",
+-                       SUPPORTED_SMBIOS_VER >> 8, SUPPORTED_SMBIOS_VER & 0xFF);
+-        }
+         // FIXME: This is hackerish ... rather try to avoid looping dmi_table() calls too much
+         if( version_added == 0 ) {
+                 dmixml_AddAttribute(xmlnode, "smbios_version", "%u.%u", ver >> 8, ver & 0xFF);
