@@ -4,7 +4,7 @@
 Summary: Python module to access DMI data
 Name: python-dmidecode
 Version: 3.12.2
-Release: 1.1%{?dist}
+Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Libraries
 URL: http://projects.autonomy.net.au/python-dmidecode/
@@ -17,7 +17,6 @@ BuildRequires: libxml2-devel
 BuildRequires: python-devel
 
 Patch0: disable-old-smbios-warning.patch
-Patch1: revert-interface-changes.patch
 
 %description
 python-dmidecode is a python extension module that uses the
@@ -27,7 +26,6 @@ as python data structures or as XML data using libxml2.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 
 %build
 make build
@@ -55,10 +53,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/python-dmidecode/
 
 %changelog
-* Mon Nov 20 2017 Petr Oros <poros@redhat.com> - 3.12.2-1.1
-- Revert interface changes
-- Resolves: #1514017
-
 * Mon Mar 13 2017 Petr Oros <poros@redhat.com> - 3.12.2-1
 - Update to new release
 - Resolves: #1431548
